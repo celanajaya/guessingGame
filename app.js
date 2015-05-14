@@ -88,7 +88,7 @@ var Guesser = function() {
 		if (guess === answer) {
 			$('#guesses').html(0);
 			$('#result').html("You Win!!");
-			$('#hilow').html("Press Enter to Play Again").append("<div class='win'><img src='santa.gif'><div>");
+			$('#hilow').html("Press Enter to Play Again").append("<div class='win'><img src='http://i.imgur.com/nuR4V.gif'><div>");
 			enterToRestart();
 		}
 		//if the number has already been guessed
