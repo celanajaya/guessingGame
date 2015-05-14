@@ -11,15 +11,16 @@ var enterToRestart = function() {
 };
 
 var getHint = function() {
-	$("#hint").fadeOut();
+	$("#hint").fadeOut("fast");
 	$('#answer').fadeIn("slow", function() {
-		$('#answer').html("The Answer is " + answer);
+		$('#answer').html("It's " + answer + "!");
 	});
 };
 	
 var Guesser = function() {
 	var guess = parseInt($('input:text').val());
 	var difference = Math.abs(guess - answer);
+	var prevDifference = Math.abs(guesses[guesses.length - 1] - answer);
 	var alreadyGuessed = false;
 
 	guesses.forEach(function(a) {
@@ -28,30 +29,49 @@ var Guesser = function() {
 		}
 	});
 
-	//determines the value of the status variable
-	var determineStatus = function(num) {
-		if (num <= 5) {
-			var status = "VERY warm!!";
+	//determines how hot/cold you are! Takes the difference between your guess and the answer as input
+	var setStatus = function(diff) {
+		var status = '';
+		if (diff <= 5) {
+			status = "HOT! my friend!!";
+			return status;
 		}
-		else if (num <= 20) {
-			status = "warm!";
+		else if (diff <= 20) {
+			status = "pretty warm!";
+			return status;
 		}
-		else if (num <= 40) {
-			status = "luke warm/coldish..."; 
+		else if (diff <= 40) {
+			status = "a bit tepid..."; 
+			return status;
 		}
-		else if (num <= 60) {
-			status = "cold.";
+		else if (diff <= 60) {
+			status = "pretty cold.";
+			return status;
 		}
-		else if (num <= 80) {
-			status = 'VERY cold!!';
+		else if (diff <= 80) {
+			status = 'V-V-VERY cold!!';
+			return status;
 		}
 		else {
-			status = 'ABSOLUTELY FRIGID!!!';
+			status = 'ABSOLUTELY FRIGID!!! All the molecules in your body have frozen!';
+			return status;
 		}
-		$('#result').html("You are " + status)
 	};
 
-	//determines the value of the hilow variable
+	//determines whether the current guess was better or worse than the previous guess and updates HTML.
+	var updateStatus = function(diff1, diff2, stat) {
+		if (guesses.length === 1) {
+			$("#result").html("You are " + stat(diff1));
+		}
+		else if (diff1 < diff2) {
+			$("#result").html("Getting warmer..." + stat(diff1));
+		}
+		else if (diff1 > diff2) {
+			$("#result").html("Getting colder... " + stat(diff1));
+		}
+	};
+
+	//determines whether the next guess should be higher or lower, takes the current guess and the answer as input.
 	var hiLow = function (a, b) {	
 		if (a < b) {
 			var hilow = "higher!";
@@ -59,36 +79,43 @@ var Guesser = function() {
 		else {
 			hilow = "lower!";
 		}
-		$('#hilow').html(" Guess " + hilow);
+		$('#hilow').html("Try to guess " + hilow);
 	};
 
-	//determines how to update the html based on the value of guess and guessesLeft
+	//the primary gameplay function. 
 	var updateHTML = function() {
-		if (isNaN(guess)|| guess < 1 || guess > 100) {
-			$('#result').html("Please enter a number between 1 and 100")
-			$('#hilow').html("Guess Again!");
-			$('.input-group input').attr("placeholder", "I said put a VALID NUMBER here, pal!");
+		//if the guess is correct!
+		if (guess === answer) {
+			$('#guesses').html(0);
+			$('#result').html("You Win!!");
+			$('#hilow').html("Press Enter to Play Again").append("<div class='win'><img src='santa.gif'><div>");
+			enterToRestart();
 		}
+		//if the number has already been guessed
 		else if (alreadyGuessed) {
 			$("#result").html("You already guessed that one!");
-			$("#hilow").html("Guess Again!");
+			$("#hilow").html("Try Again!");
 		}
-		else if (guessesLeft === 0) {
+		//if the number of guesses has been exceeded
+		else if (guessesLeft <= 1) {
+			$('#guesses').html(0);
 			$("#result").html("You Lose!");
 			$("#hilow").html("Press Enter to Play Again!");
 			enterToRestart();
 		}
-		else if (guess === answer) {
-			$('#result').html("You Win!!");
-			$('#hilow').html("Press Enter to Play Again");
-			enterToRestart();
+		//if the input is invalid
+		else if (isNaN(guess)|| guess < 1 || guess > 100) {
+			$('#result').html("Invalid Entry! Enter a number between 1 and 100!")
+			$('#hilow').html("Try Again!");
+			$('.input-group input').attr("placeholder", "I said put a VALID NUMBER here, pal!");
 		}
+		//else a valid guess was made
 		else {
 			guesses.push(guess);
-			hiLow(guess, answer);
-			determineStatus(difference);
 			guessesLeft -= 1;
 			$('#guesses').html(guessesLeft);
+			updateStatus(difference, prevDifference, setStatus);
+			hiLow(guess, answer);
 		}
 	};
 	updateHTML();
@@ -97,17 +124,20 @@ var Guesser = function() {
 $(document).keyup(function(event) {
 	if (event.keyCode === 13) {
 		Guesser();
+		$('input:text').val('');
 	}
 	else if (event.keyCode === 72) {
 		getHint();
+		$('input:text').val('');
 	}
 });
 
 $("#guess").click(function() {
 	Guesser();
+	$('input:text').val('');
 });
 
-$("#hint").click(function() {
+$("#hintbtn").click(function() {
 	getHint();
 });
 
