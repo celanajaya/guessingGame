@@ -2,22 +2,16 @@ var guesses = [];
 var guessesLeft = 5;
 var answer = Math.floor((Math.random() * 100) + 1);
 
-var enterToRestart = function() {
-	$(document).keyup(function() {
-		if (event.keyCode === 13) {
-			location.reload();
-		}
-	});
-};
-
 var getHint = function() {
 	$("#hint").fadeOut("fast");
 	$('#answer').fadeIn("slow", function() {
 		$('#answer').html("It's " + answer + "!");
 	});
 };
-	
-var Guesser = function() {
+
+//so most of the app is wrapped this gigantic function which is run each time someone
+//presses the "guess" button. Inside the function are a bunch of smaller functions.
+var Guess = function() {
 	var guess = parseInt($('input:text').val());
 	var difference = Math.abs(guess - answer);
 	var prevDifference = Math.abs(guesses[guesses.length - 1] - answer);
@@ -28,6 +22,15 @@ var Guesser = function() {
 			alreadyGuessed = true;
 		}
 	});
+
+	var enterToRestart = function() {
+		$(document).keyup(function(e) {
+			if (e.keyCode === 13) {
+				e.preventDefault();
+				location.reload();
+			}
+		});
+	};
 
 	//determines how hot/cold you are! Takes the difference between your guess and the answer as input
 	var setStatus = function(diff) {
@@ -82,8 +85,7 @@ var Guesser = function() {
 		$('#hilow').html("Try to guess " + hilow);
 	};
 
-	//the primary gameplay function. 
-	var updateHTML = function() {
+	(function() {
 		//if the guess is correct!
 		if (guess === answer) {
 			$('#guesses').html(0);
@@ -107,7 +109,7 @@ var Guesser = function() {
 		else if (isNaN(guess)|| guess < 1 || guess > 100) {
 			$('#result').html("Invalid Entry! Enter a number between 1 and 100!")
 			$('#hilow').html("Try Again!");
-			$('.input-group input').attr("placeholder", "I said put a VALID NUMBER here, pal!");
+			$('input:text').attr("placeholder", "I said put a VALID NUMBER here, pal!");
 		}
 		//else a valid guess was made
 		else {
@@ -117,23 +119,22 @@ var Guesser = function() {
 			updateStatus(difference, prevDifference, setStatus);
 			hiLow(guess, answer);
 		}
-	};
-	updateHTML();
+	})();
 };
 
-$(document).keyup(function(event) {
-	if (event.keyCode === 13) {
-		Guesser();
+$(document).keyup(function(e) {
+	if (e.keyCode === 13) {
+		Guess();
 		$('input:text').val('');
 	}
-	else if (event.keyCode === 72) {
+	else if (e.keyCode === 72) {
 		getHint();
 		$('input:text').val('');
 	}
 });
 
 $("#guess").click(function() {
-	Guesser();
+	Guess();
 	$('input:text').val('');
 });
 
