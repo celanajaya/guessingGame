@@ -2,14 +2,6 @@ var guesses = [];
 var guessesLeft = 5;
 var answer = Math.floor((Math.random() * 100) + 1);
 
-var enterToRestart = function() {
-	$(document).keyup(function() {
-		if (event.keyCode === 13) {
-			location.reload();
-		}
-	});
-};
-
 var getHint = function() {
 	$("#hint").fadeOut("fast");
 	$('#answer').fadeIn("slow", function() {
@@ -17,7 +9,7 @@ var getHint = function() {
 	});
 };
 	
-var Guesser = function() {
+var Guess = function() {
 	var guess = parseInt($('input:text').val());
 	var difference = Math.abs(guess - answer);
 	var prevDifference = Math.abs(guesses[guesses.length - 1] - answer);
@@ -28,6 +20,14 @@ var Guesser = function() {
 			alreadyGuessed = true;
 		}
 	});
+
+	var enterToRestart = function() {
+		$(document).keyup(function(e) {
+			if (e.keyCode === 13) {
+				location.reload();
+			}
+		});
+	};
 
 	//determines how hot/cold you are! Takes the difference between your guess and the answer as input
 	var setStatus = function(diff) {
@@ -83,7 +83,7 @@ var Guesser = function() {
 	};
 
 	//the primary gameplay function. 
-	var updateHTML = function() {
+	(function() {
 		//if the guess is correct!
 		if (guess === answer) {
 			$('#guesses').html(0);
@@ -117,13 +117,12 @@ var Guesser = function() {
 			updateStatus(difference, prevDifference, setStatus);
 			hiLow(guess, answer);
 		}
-	};
-	updateHTML();
+	})();
 };
 
-$(document).keyup(function(event) {
-	if (event.keyCode === 13) {
-		Guesser();
+$(document).keyup(function(e) {
+	if (e.keyCode === 13) {
+		Guess();
 		$('input:text').val('');
 	}
 	else if (event.keyCode === 72) {
@@ -133,7 +132,7 @@ $(document).keyup(function(event) {
 });
 
 $("#guess").click(function() {
-	Guesser();
+	Guess();
 	$('input:text').val('');
 });
 
